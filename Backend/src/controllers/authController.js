@@ -12,7 +12,6 @@ const generateToken = (id) => {
 
 // Register User
 // @route   POST /api/auth/register
-// Register a new user
 const registerUser = async (req, res) => {
     try{
         const { username, email, password } = req.body;
@@ -38,12 +37,6 @@ const registerUser = async (req, res) => {
         if (existingUser) {
             return res.status(409).json({ message: 'User already exists' });
         }
-
-        // Determine user role: Admin if correct invite token is provided
-        // let role = 'user';
-        // if (adminInviteToken && adminInviteToken === process.env.ADMIN_INVITE_TOKEN) {
-        //     role = 'admin';
-        // }
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
@@ -125,7 +118,6 @@ const loginUser = async (req, res) => {
 
 // Logout User
 // @route   POST /api/auth/logout
-// @desc    Logout user
 const logoutUser = async (req, res) => {
     try{
 
