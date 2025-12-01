@@ -1,20 +1,22 @@
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
+const { ObjectId } = require('mongodb');
+const { getDB } = require('../config/database');
 
 // Generate JWT
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '7d',
     });
-}
+};
 
 // Register User
 // @route   POST /api/auth/register
 const registerUser = async (req, res) => {
-    try{
+    try {
         const { username, email, password } = req.body;
+        const db = getDB();
 
         // Validation
         if (!username || !email || !password) {
@@ -31,9 +33,10 @@ const registerUser = async (req, res) => {
         }
 
         // Check if user already exists
-        const existingUser = await User.findOne({ 
-                $or: [{ email }, { username }]
-            });
+        const existingUser = await db.collection('users').findOne({
+            $or: [{ email }, { username }]
+        });
+
         if (existingUser) {
             return res.status(409).json({ message: 'User already exists' });
         }
@@ -43,31 +46,29 @@ const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Create new user
-        const newUser = new User({
+        const newUser = {
             username,
             email,
             password: hashedPassword,
             createdAt: new Date(),
-        });
+        };
 
-        const savedUser = await newUser.save();
+        const result = await db.collection('users').insertOne(newUser);
 
         // Generate token
-        const token = generateToken(savedUser._id);
+        const token = generateToken(result.insertedId);
 
-        // return userr data with token
+        // Return user data with token
         res.status(201).json({
             message: 'User registered successfully',
             token: token,
-            user:{
-                _id: newUser._id,
+            user: {
+                _id: result.insertedId,
                 username: newUser.username,
                 email: newUser.email,
             }
-            
-            
         });
-    }catch(error){
+    } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ error: "Failed to register user" });
     }
@@ -75,10 +76,10 @@ const registerUser = async (req, res) => {
 
 // Login User
 // @route   POST /api/auth/login
-// Authenticate user and get token
 const loginUser = async (req, res) => {
-    try{
+    try {
         const { username, password } = req.body;
+        const db = getDB();
 
         // Validation
         if (!username || !password) {
@@ -86,15 +87,17 @@ const loginUser = async (req, res) => {
         }
 
         // Find user by username
-        const user = await User.findOne({ username });
+        const user = await db.collection('users').findOne({ username });
+        
         if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid username or password' });
         }
 
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid username or password' });
         }
 
         // Generate token
@@ -110,8 +113,8 @@ const loginUser = async (req, res) => {
                 email: user.email,
             }
         });
-    }catch(error){
-        console.error('Error loggin in:',error);
+    } catch (error) {
+        console.error('Error logging in:', error);
         res.status(500).json({ message: 'Failed to login' });
     }
 };
@@ -119,36 +122,58 @@ const loginUser = async (req, res) => {
 // Logout User
 // @route   POST /api/auth/logout
 const logoutUser = async (req, res) => {
-    try{
-
-    }catch(error){
+    try {
+        // With JWT, logout is handled on the client side
+        res.json({ message: 'Logout successful' });
+    } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
 
 // Get User Profile
 // @route   GET /api/auth/profile
-// Get logged in user profile
 const getUserProfile = async (req, res) => {
-    try{
-        const user = await User.findById(req.user._id).select('-password');
+    try {
+        const db = getDB();
+        const user = await db.collection('users').findOne(
+            { _id: new ObjectId(req.user._id) },
+            { projection: { password: 0 } } // Exclude password
+        );
+        
         if (user) {
             res.json(user);
         } else {
             res.status(404).json({ message: 'User not found' });
         }
-    }catch(error){
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
 
 // Update User Profile
 // @route   PUT /api/auth/profile
-// Update logged in user profile
 const updateUserProfile = async (req, res) => {
-    try{
-
-    }catch(error){
+    try {
+        const db = getDB();
+        const { username, email } = req.body;
+        
+        const updateData = {};
+        if (username) updateData.username = username;
+        if (email) updateData.email = email;
+        
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(req.user._id) },
+            { $set: updateData }
+        );
+        
+        if (result.modifiedCount > 0) {
+            res.json({ message: 'Profile updated successfully' });
+        } else {
+            res.status(400).json({ message: 'No changes made' });
+        }
+    } catch (error) {
+        console.error('Error updating profile:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -157,5 +182,6 @@ module.exports = {
     registerUser,
     loginUser,
     logoutUser,
+    getUserProfile,
     updateUserProfile,
 };
