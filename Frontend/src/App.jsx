@@ -1,6 +1,7 @@
 import Login from './pages/Login'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
+import Register from './pages/Register'
 import Home from './pages/Home';
 import { Toaster } from 'sonner';
 
@@ -15,7 +16,7 @@ function App() {
           <Route path="/" element={<Navigate to='/home'/>} />
           <Route path='/home' element={<Home/>} />
         {/* </Route> */}
-
+        <Route path='/register' element={<Register/>} />
         <Route path='/login' element={<Login/>}/>
       </Routes>
 

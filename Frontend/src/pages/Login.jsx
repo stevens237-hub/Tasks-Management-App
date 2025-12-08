@@ -1,12 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
+import Preloader from "../components/landing/Preloader";
 
 
 
 const Login = () => {
+  const [loading, setLoading] = useState(true);
+
   const user = "";
   const {
     register, 
@@ -36,9 +39,22 @@ const Login = () => {
   // };
 
   useEffect(() => {
+        // Simulate preloader
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+        }, []);
+
+  useEffect(() => {
     // Si l'utilisateur est déjà connecté, redirige vers le tableau de bord
     user && navigate('/dashboard');
     }, [user]);
+
+    if (loading) {
+        return <Preloader />;
+    }
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#f3f4f6] dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#302943] via-slate-900 to-black">
@@ -74,15 +90,15 @@ const Login = () => {
             </div>
             <div className='flex flex-col gap-y-5'>
               <Textbox
-                placeholder='you@example.com'
-                type='email'
-                name='email'
-                label='Email Address'
+                placeholder='johndoe'
+                type='text'
+                name='username'
+                label='Username'
                 className='w-full rounded-full'
-                register={register("email", {
-                  required: "Email Address is required!",
+                register={register("username", {
+                  required: "Username is required!",
                 })}
-                error={errors.email ? errors.email.message : ""}
+                error={errors.username ? errors.username.message : ""}
               />
               <Textbox
                 placeholder='password'
