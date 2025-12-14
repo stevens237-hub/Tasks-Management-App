@@ -1,15 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
-import { useEffect, useState } from "react";
 import Preloader from "../components/landing/Preloader";
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
   const [loading, setLoading] = useState(true);
-
-  const user = "";
+  const [submitting, setSubmitting] = useState(false);
+  const { register: registerUser, user, isAuthenticated } = useAuth();
   const {
     register,
     handleSubmit,
@@ -18,23 +18,31 @@ const Register = () => {
 
   const navigate = useNavigate();
   
-//   const submitHandler = async (data) => {
-//     console.log("Registration data:", data);
-//     // Ici, tu feras l'appel API pour l'inscription
-//   };
-
-    const submitHandler = async() => {
-        console.log("Submitted data:");
+  const submitHandler = async (data) => {
+    setSubmitting(true);
+    const result = await registerUser(data.username, data.email, data.password);
+    setSubmitting(false);
+    
+    if (result.success) {
+      navigate('/login');
     }
+  };
 
-    useEffect(() => {
-        // Simulate preloader
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+  useEffect(() => {
+    // Simulate preloader
+    const timer = setTimeout(() => {
+        setLoading(false);
+    }, 1000);
 
-        return () => clearTimeout(timer);
-        }, []);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Si l'utilisateur est déjà connecté, redirige vers le tableau de bord
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate, isAuthenticated]);
 
     
     if (loading) {
@@ -114,8 +122,9 @@ const Register = () => {
             </div>
             <Button
               type='submit'
-              label='Sign Up'
-              className='w-full h-10 bg-blue-700 text-white rounded-full'
+              label={submitting ? 'Inscription...' : 'Sign Up'}
+              className='w-full h-10 bg-blue-700 text-white rounded-full disabled:opacity-50'
+              disabled={submitting}
             />
             <p className='text-center text-sm text-gray-600'>
               Already have an account?{" "}

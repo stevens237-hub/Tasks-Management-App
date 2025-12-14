@@ -4,53 +4,45 @@ import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import Preloader from "../components/landing/Preloader";
-
-
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [loading, setLoading] = useState(true);
-
-  const user = "";
+  const [submitting, setSubmitting] = useState(false);
+  const { login, user, isAuthenticated } = useAuth();
   const {
     register, 
-    watch,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
   const navigate = useNavigate();
   
-  const submitHandler = async() => {
-    console.log("Submitted data:");
-  }
-
-  // const handleLogin = async (data) => {
-  //   try {
-
-  //     // Appel de l'API de connexion
-  //     const response = await login(data).unwrap();
-      
-  //     dispatch(setCredentials(response));
-  //     navigate('/');
-  //   } catch (err) {
-  //     toast.error(err?.data?.message || 'Login failed');
-  //   }
-
-  // };
+  const submitHandler = async (data) => {
+    setSubmitting(true);
+    const result = await login(data.username, data.password);
+    setSubmitting(false);
+    
+    if (result.success) {
+      navigate('/dashboard');
+    }
+  };
 
   useEffect(() => {
-        // Simulate preloader
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+    // Simulate preloader
+    const timer = setTimeout(() => {
+        setLoading(false);
+    }, 1000);
 
-        return () => clearTimeout(timer);
-        }, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Si l'utilisateur est déjà connecté, redirige vers le tableau de bord
-    user && navigate('/dashboard');
-    }, [user]);
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate, isAuthenticated]);
 
     if (loading) {
         return <Preloader />;
@@ -118,8 +110,9 @@ const Login = () => {
             
               <Button
                 type='submit'
-                label='Log in'
-                className='w-full h-10 bg-blue-700 text-white rounded-full'
+                label={submitting ? 'Connexion...' : 'Log in'}
+                className='w-full h-10 bg-blue-700 text-white rounded-full disabled:opacity-50'
+                disabled={submitting}
               />
             
           </form>
