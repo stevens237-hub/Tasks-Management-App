@@ -37,13 +37,6 @@ const Register = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    // Si l'utilisateur est déjà connecté, redirige vers le tableau de bord
-    if (isAuthenticated()) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate, isAuthenticated]);
-
     
     if (loading) {
         return <Preloader />;

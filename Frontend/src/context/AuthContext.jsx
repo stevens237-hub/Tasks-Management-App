@@ -52,13 +52,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Erreur lors de l\'inscription');
       }
 
-      // Ne pas sauvegarder automatiquement les credentials après l'inscription
-      // L'utilisateur devra se connecter manuellement
-      // localStorage.setItem('token', data.token);
-      // localStorage.setItem('userInfo', JSON.stringify(data.user));
-      // setToken(data.token);
-      // setUser(data.user);
-
       toast.success(data.message || 'Inscription réussie! Vous pouvez maintenant vous connecter.');
       return { success: true, data };
     } catch (error) {

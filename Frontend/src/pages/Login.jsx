@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import Preloader from "../components/landing/Preloader";
 import { useAuth } from "../context/AuthContext";
+import { setCredentials } from "../redux/Slices/authSlice";
 
 const Login = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { login, user, isAuthenticated } = useAuth();
+  const dispatch = useDispatch();
   const {
     register, 
     handleSubmit,
@@ -24,6 +27,8 @@ const Login = () => {
     setSubmitting(false);
     
     if (result.success) {
+      // Synchroniser avec Redux pour que Navbar et Sidebar voient l'utilisateur
+      dispatch(setCredentials(result.data.user));
       navigate('/dashboard');
     }
   };
@@ -37,12 +42,9 @@ const Login = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    // Si l'utilisateur est déjà connecté, redirige vers le tableau de bord
-    if (isAuthenticated()) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate, isAuthenticated]);
+  // Ne pas rediriger automatiquement si l'utilisateur est connecté
+  // Permet de se déconnecter et se reconnecter avec un autre compte
+  // La redirection se fera après une connexion réussie dans submitHandler
 
     if (loading) {
         return <Preloader />;
