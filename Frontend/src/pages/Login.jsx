@@ -42,10 +42,6 @@ const Login = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Ne pas rediriger automatiquement si l'utilisateur est connecté
-  // Permet de se déconnecter et se reconnecter avec un autre compte
-  // La redirection se fera après une connexion réussie dans submitHandler
-
     if (loading) {
         return <Preloader />;
     }
