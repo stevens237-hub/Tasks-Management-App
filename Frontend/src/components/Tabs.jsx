@@ -13,7 +13,7 @@ const Tabs = ({ tabs, setSelected, children }) => {
           {tabs.map((tab, index) => (
             <Tab
               key={index + tab.title}
-              onclick={() => setSelected(index)}
+              onClick={() => setSelected(index)}
               className={({ selected }) =>
                 classNames(
                   "w-fit flex items-center outline-none gap-2 px-3 py-2.5 text-base font-medium leading-5 bg-white",
@@ -28,7 +28,7 @@ const Tabs = ({ tabs, setSelected, children }) => {
             </Tab>
           ))}
         </Tab.List>
-        <Tab.Panel className="w-full mt-2">{children}</Tab.Panel>
+        <Tab.Panels className="w-full mt-2">{children}</Tab.Panels>
       </Tab.Group>
     </div>
   );

@@ -11,7 +11,7 @@ import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../utils";
 
 import { BiMessageAltDetail } from "react-icons/bi";
 import { FaList } from "react-icons/fa";
-
+import TaskDialog from "./TaskDialog";
 import { IoMdAdd } from "react-icons/io";
 
 
@@ -39,7 +39,7 @@ const TaskCard = ({ task }) => {
             <span className='uppercase'>{task?.priority} Priority</span>
           </div>
 
-          {user?.isAdmin && <TaskDialog task={task} />}
+          {<TaskDialog task={task} />}
         </div>
 
         <>

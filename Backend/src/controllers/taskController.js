@@ -9,9 +9,8 @@ const { getDB } = require('../config/database');
 const createTask = async (req, res) => {
     try {
         const db = getDB();
-        const { title, stage, date, priority, assets } = req.body;
+        const { title, stage, date, priority, assets, description, links, team } = req.body;
 
-        // Validation de base
         if (!title || title.trim() === '') {
             return res.status(400).json({ 
                 status: false, 
@@ -19,7 +18,6 @@ const createTask = async (req, res) => {
             });
         }
 
-        // Validation des enums
         const validPriorities = ['high', 'medium', 'normal', 'low'];
         const validStages = ['todo', 'in progress', 'completed'];
 
@@ -37,21 +35,23 @@ const createTask = async (req, res) => {
             });
         }
 
-        // Préparer les données de la tâche
         const task = {
             title,
             stage: stage ? stage.toLowerCase() : 'todo',
             date: date ? new Date(date) : new Date(),
             priority: priority ? priority.toLowerCase() : 'normal',
+            description: description || "",
+            links: links || "",
             assets: assets || [],
+            team: team || [],
             activities: [{
                 type: "started",
                 activity: `Task created with ${priority || 'normal'} priority`,
                 date: new Date(),
-                by: new ObjectId(req.user._id)
+                by: req.user._id
             }],
             subTasks: [],
-            team: [],
+            userId: req.user._id,
             isTrashed: false,
             createdAt: new Date(),
             updatedAt: new Date()
@@ -81,16 +81,21 @@ const createTask = async (req, res) => {
 const getTasks = async (req, res) => {
     try {
         const db = getDB();
-        const { stage, isTrashed } = req.query;
+        const { stage, isTrashed, search } = req.query;
 
-        // Construire la requête
-        let query = { isTrashed: isTrashed === 'true' };
+        let query = { 
+            userId: req.user._id,
+            isTrashed: isTrashed === 'true' 
+        };
 
-        if (stage) {
+        if (stage && stage !== '') {
             query.stage = stage.toLowerCase();
         }
 
-        // Récupérer les tâches
+        if (search && search !== '') {
+            query.title = { $regex: search, $options: 'i' };
+        }
+
         const tasks = await db.collection('tasks')
             .find(query)
             .sort({ createdAt: -1 })
@@ -157,7 +162,7 @@ const updateTask = async (req, res) => {
     try {
         const db = getDB();
         const { id } = req.params;
-        const { title, date, stage, priority, assets } = req.body;
+        const { title, date, stage, priority, assets, description, links, team } = req.body;
 
         if (!ObjectId.isValid(id)) {
             return res.status(400).json({
@@ -166,7 +171,6 @@ const updateTask = async (req, res) => {
             });
         }
 
-        // Préparer les données de mise à jour
         const updateData = {
             updatedAt: new Date()
         };
@@ -174,8 +178,24 @@ const updateTask = async (req, res) => {
         if (title) updateData.title = title;
         if (date) updateData.date = new Date(date);
         if (priority) updateData.priority = priority.toLowerCase();
-        if (assets) updateData.assets = assets;
         if (stage) updateData.stage = stage.toLowerCase();
+        if (description !== undefined) updateData.description = description;
+        if (links !== undefined) updateData.links = links;
+        if (assets) updateData.assets = assets;
+        if (team) updateData.team = team;
+
+        const existingTask = await db.collection('tasks').findOne({ _id: new ObjectId(id) });
+
+        if (!existingTask) {
+            return res.status(404).json({
+                status: false,
+                message: 'Task not found'
+            });
+        }
+
+        if (!existingTask.userId) {
+            updateData.userId = req.user._id;
+        }
 
         const result = await db.collection('tasks').findOneAndUpdate(
             { _id: new ObjectId(id) },
@@ -183,16 +203,9 @@ const updateTask = async (req, res) => {
             { returnDocument: 'after' }
         );
 
-        if (!result.value) {
-            return res.status(404).json({
-                status: false,
-                message: 'Task not found'
-            });
-        }
-
         res.status(200).json({ 
             status: true, 
-            task: result.value,
+            task: result,
             message: "Task updated successfully" 
         });
     } catch (error) {
@@ -258,7 +271,6 @@ const deleteRestoreTask = async (req, res) => {
         const { id } = req.params;
         const { actionType } = req.query;
 
-        // Actions en masse (sans ID)
         if (actionType === "deleteAll") {
             const result = await db.collection('tasks').deleteMany({ isTrashed: true });
             return res.status(200).json({
@@ -276,7 +288,6 @@ const deleteRestoreTask = async (req, res) => {
             });
         }
 
-        // Actions sur une tâche spécifique (avec ID)
         if (!id) {
             return res.status(400).json({
                 status: false,
@@ -332,142 +343,6 @@ const deleteRestoreTask = async (req, res) => {
         });
     }
 };
-
-/**
- * Créer une sous-tâche
- * @route   PUT /api/tasks/create-subtask/:id
- * @access  Private
- */
-// const createSubTask = async (req, res) => {
-//     try {
-//         const db = getDB();
-//         const { id } = req.params;
-//         const { title, tag, date } = req.body;
-
-//         if (!title) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: 'SubTask title is required'
-//             });
-//         }
-
-//         if (!ObjectId.isValid(id)) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: 'Invalid task ID'
-//             });
-//         }
-
-//         const newSubTask = {
-//             _id: new ObjectId(),
-//             title,
-//             date: date ? new Date(date) : new Date(),
-//             tag: tag || '',
-//             completed: false
-//         };
-
-//         const result = await db.collection('tasks').findOneAndUpdate(
-//             { _id: new ObjectId(id) },
-//             { 
-//                 $push: { subTasks: newSubTask },
-//                 $set: { updatedAt: new Date() }
-//             },
-//             { returnDocument: 'after' }
-//         );
-
-//         if (!result.value) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: 'Task not found'
-//             });
-//         }
-
-//         res.status(200).json({ 
-//             status: true, 
-//             message: "SubTask added successfully",
-//             task: result.value
-//         });
-//     } catch (error) {
-//         console.error('Create subtask error:', error);
-//         return res.status(400).json({ 
-//             status: false, 
-//             message: error.message 
-//         });
-//     }
-// };
-
-/**
- * Ajouter une activité à une tâche
- * @route   POST /api/tasks/activity/:id
- * @access  Private
- */
-// const postTaskActivity = async (req, res) => {
-//     try {
-//         const db = getDB();
-//         const { id } = req.params;
-//         const { type, activity } = req.body;
-
-//         // Validation du type d'activité
-//         const validActivityTypes = ['assigned', 'started', 'in progress', 'bug', 'completed', 'commented'];
-//         const activityType = type ? type.toLowerCase() : 'commented';
-
-//         if (!validActivityTypes.includes(activityType)) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: `Activity type must be one of: ${validActivityTypes.join(', ')}`
-//             });
-//         }
-
-//         if (!activity) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: 'Activity text is required'
-//             });
-//         }
-
-//         if (!ObjectId.isValid(id)) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: 'Invalid task ID'
-//             });
-//         }
-
-//         const newActivity = {
-//             type: type || 'commented',
-//             activity,
-//             date: new Date(),
-//             by: new ObjectId(req.user._id)
-//         };
-
-//         const result = await db.collection('tasks').findOneAndUpdate(
-//             { _id: new ObjectId(id) },
-//             { 
-//                 $push: { activities: newActivity },
-//                 $set: { updatedAt: new Date() }
-//             },
-//             { returnDocument: 'after' }
-//         );
-
-//         if (!result.value) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: 'Task not found'
-//             });
-//         }
-
-//         res.status(200).json({
-//             status: true,
-//             message: 'Activity posted successfully',
-//             task: result.value
-//         });
-//     } catch (error) {
-//         console.error('Post activity error:', error);
-//         return res.status(400).json({ 
-//             status: false, 
-//             message: error.message 
-//         });
-//     }
-// };
 
 module.exports = {
     createTask,
