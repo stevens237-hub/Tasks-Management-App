@@ -13,15 +13,6 @@ export const postApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Task'],
     }),
 
-    duplicateTask: builder.mutation({
-      query: (id) => ({
-        url: `${TASKS_URL}/duplicate/${id}`,
-        method: "POST",
-        body: {},
-      }),
-      invalidatesTags: ['Task'],
-    }),
-
     updateTask: builder.mutation({
       query: (data) => ({
         url: `${TASKS_URL}/update/${data._id}`,
@@ -86,26 +77,9 @@ export const postApiSlice = apiSlice.injectEndpoints({
         url: `${TASKS_URL}/dashboard`,
         method: "GET",
       }),
-      invalidatesTags: ['Task'],
+      providesTags: ['Task'],
     }),
 
-    changeTaskStage: builder.mutation({
-      query: (data) => ({
-        url: `${TASKS_URL}/change-stage/${data?.id}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ['Task'],
-    }),
-
-    changeSubTaskStatus: builder.mutation({
-      query: (data) => ({
-        url: `${TASKS_URL}/change-status/${data?.id}/${data?.subId}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ['Task'],
-    }),
   }),
 });
 
@@ -116,10 +90,7 @@ export const {
   useCreateSubTaskMutation,
   useTrashTastMutation,
   useDeleteRestoreTastMutation,
-  useDuplicateTaskMutation,
   useUpdateTaskMutation,
   useGetSingleTaskQuery,
   useGetDasboardStatsQuery,
-  useChangeTaskStageMutation,
-  useChangeSubTaskStatusMutation,
 } = postApiSlice;

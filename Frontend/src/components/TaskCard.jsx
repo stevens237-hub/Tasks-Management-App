@@ -39,7 +39,7 @@ const TaskCard = ({ task }) => {
             <span className='uppercase'>{task?.priority} Priority</span>
           </div>
 
-          {<TaskDialog task={task} />}
+          {<TaskDialog className='bg-black' task={task} />}
         </div>
 
         <>
@@ -80,7 +80,7 @@ const TaskCard = ({ task }) => {
                   BGS[index % BGS?.length]
                 )}
               >
-                {/* <UserInfo user={m} /> */}
+                
               </div>
             ))}
           </div>

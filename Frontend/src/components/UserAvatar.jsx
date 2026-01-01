@@ -15,6 +15,7 @@ const UserAvatar = () => {
 
   const logoutHandler = () => {
     console.log("logout");
+    navigate("/login");
   };
 
   return (

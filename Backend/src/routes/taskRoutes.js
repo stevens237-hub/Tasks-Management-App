@@ -6,12 +6,16 @@ const {
     updateTask,
     trashTask,
     deleteRestoreTask,
+    getDashboardStats,
     createSubTask,
     postTaskActivity
 } = require('../controllers/taskController');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Route pour les statistiques du tableau de bord
+router.get('/dashboard', protect, getDashboardStats);
 
 // Routes CRUD de base (toutes protégées)
 router.post('/create', protect, createTask);

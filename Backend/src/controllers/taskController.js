@@ -344,6 +344,93 @@ const deleteRestoreTask = async (req, res) => {
     }
 };
 
+const getDashboardStats = async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const query = {
+            userId: req.user._id,
+            isTrashed: false
+        };
+
+        // Récupérer toutes les tâches de l'utilisateur
+        const allTasks = await db.collection('tasks')
+            .find(query)
+            .sort({ _id: -1 })
+            .toArray();
+
+        // Calculer la date d'il y a 7 jours
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        // Compter les tâches par stage
+        const groupedTasks = allTasks.reduce((result, task) => {
+            const stage = task.stage;
+            if (!result[stage]) {
+                result[stage] = 1;
+            } else {
+                result[stage] += 1;
+            }
+            return result;
+        }, {});
+
+        // Compter les tâches créées cette semaine par stage
+        const lastWeekTasks = allTasks.filter(task => 
+            new Date(task.createdAt) >= oneWeekAgo
+        );
+
+        const lastWeekGrouped = lastWeekTasks.reduce((result, task) => {
+            const stage = task.stage;
+            if (!result[stage]) {
+                result[stage] = 1;
+            } else {
+                result[stage] += 1;
+            }
+            return result;
+        }, {});
+
+        // Données pour le graphique (par priorité)
+        const graphData = Object.entries(
+            allTasks.reduce((result, task) => {
+                const { priority } = task;
+                result[priority] = (result[priority] || 0) + 1;
+                return result;
+            }, {})
+        ).map(([name, total]) => ({ name, total }));
+
+        // Total des tâches
+        const totalTasks = allTasks.length;
+
+        // Total des tâches de la semaine dernière
+        const totalLastWeek = lastWeekTasks.length;
+
+        // Les 10 dernières tâches
+        const last10Task = allTasks.slice(0, 10);
+
+        // Résumé
+        const summary = {
+            totalTasks,
+            last10Task,
+            tasks: groupedTasks,
+            lastWeekTasks: lastWeekGrouped,
+            totalLastWeek,
+            graphData,
+        };
+
+        res.status(200).json({ 
+            status: true, 
+            ...summary, 
+            message: "Successfully." 
+        });
+    } catch (error) {
+        console.error('Dashboard stats error:', error);
+        return res.status(400).json({ 
+            status: false, 
+            message: error.message 
+        });
+    }
+};
+
 module.exports = {
     createTask,
     getTasks,
@@ -351,4 +438,5 @@ module.exports = {
     updateTask,
     trashTask,
     deleteRestoreTask,
+    getDashboardStats,
 };

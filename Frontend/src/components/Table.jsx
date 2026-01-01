@@ -10,7 +10,7 @@ import { useTrashTastMutation } from "../redux/slices/api/taskApiSlice.js";
 import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../utils/index.js";
 import ConfirmatioDialog from "./ConfirmationDialog.jsx";
 import { Button} from "./index";
-import { AddTask, TaskColor } from "./";
+import { AddTask, TaskColor, TaskAssets } from "./";
 import { Link } from "react-router-dom";
 
 const ICONS = {
@@ -60,6 +60,7 @@ const Table = ({ tasks }) => {
         <th className='py-2'>Task Title</th>
         <th className='py-2'>Priority</th>
         <th className='py-2 line-clamp-1'>Created At</th>
+        <th className='py-2'>Assets</th>
         <th className='py-2 text-right'>Actions</th>
       </tr>
     </thead>
@@ -93,6 +94,14 @@ const Table = ({ tasks }) => {
         <span className='text-sm text-gray-600'>
           {formatDate(new Date(task?.date))}
         </span>
+      </td>
+
+      <td className='py-2'>
+        <TaskAssets
+          activities={task?.activities?.length}
+          subTasks={task?.subTasks}
+          assets={task?.assets?.length}
+        />
       </td>
 
       <td className='py-2 flex gap-2 md:gap-4 justify-end'>

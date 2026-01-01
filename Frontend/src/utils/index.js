@@ -53,6 +53,13 @@ export const formatDate = (date) => {
     "in progress": "bg-yellow-600",
     completed: "bg-green-600",
   };
+
+  export const getCompletedSubTasks = (items) => {
+  const totalCompleted = items?.filter((item) => item?.isCompleted).length;
+
+  return totalCompleted;
+};
+
   
   export const BGS = [
     "bg-blue-600",

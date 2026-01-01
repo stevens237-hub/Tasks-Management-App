@@ -9,7 +9,7 @@ import {
 import { FaTasks, FaTrashAlt, FaUsers } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
-import { setOpenSidebar } from "../redux/Slices/authSlice";
+import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 
 const linkData = [
