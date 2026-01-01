@@ -41,7 +41,7 @@ const createTask = async (req, res) => {
             date: date ? new Date(date) : new Date(),
             priority: priority ? priority.toLowerCase() : 'normal',
             description: description || "",
-            links: links || "",
+            links: Array.isArray(links) ? links : (links ? [links] : []),
             assets: assets || [],
             team: team || [],
             activities: [{
@@ -180,7 +180,9 @@ const updateTask = async (req, res) => {
         if (priority) updateData.priority = priority.toLowerCase();
         if (stage) updateData.stage = stage.toLowerCase();
         if (description !== undefined) updateData.description = description;
-        if (links !== undefined) updateData.links = links;
+        if (links !== undefined) {
+            updateData.links = Array.isArray(links) ? links : (links ? [links] : []);
+        }
         if (assets) updateData.assets = assets;
         if (team) updateData.team = team;
 
@@ -500,6 +502,135 @@ const createSubTask = async (req, res) => {
     }
 };
 
+const postTaskActivity = async (req, res) => {
+    try {
+        const db = getDB();
+        const { id } = req.params;
+        const { type, activity } = req.body;
+
+        // Validation de l'ID
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid task ID'
+            });
+        }
+
+        // Validation des données
+        if (!activity || activity.trim() === '') {
+            return res.status(400).json({
+                status: false,
+                message: 'Activity text is required'
+            });
+        }
+
+        // Validation du type d'activité (optionnel mais recommandé)
+        const validActivityTypes = ['assigned', 'started', 'in progress', 'bug', 'completed', 'commented'];
+        const activityType = type ? type.toLowerCase() : 'commented';
+
+        if (!validActivityTypes.includes(activityType)) {
+            return res.status(400).json({
+                status: false,
+                message: `Activity type must be one of: ${validActivityTypes.join(', ')}`
+            });
+        }
+
+        // Créer la nouvelle activité
+        const newActivity = {
+            type: activityType,
+            activity,
+            date: new Date(),
+        };
+
+        // Ajouter l'activité au tableau activities
+        const result = await db.collection('tasks').findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            { 
+                $push: { activities: newActivity },
+                $set: { updatedAt: new Date() }
+            },
+            { returnDocument: 'after' }
+        );
+
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Task not found'
+            });
+        }
+
+        res.status(200).json({
+            status: true,
+            message: 'Activity posted successfully.'
+        });
+    } catch (error) {
+        console.error('Post activity error:', error);
+        return res.status(400).json({ 
+            status: false, 
+            message: error.message 
+        });
+    }
+};
+
+const updateSubTaskStage = async (req, res) => {
+    try {
+        const db = getDB();
+        const { taskId, subTaskId } = req.params;
+        const { status } = req.body;
+
+        // Validation des IDs
+        if (!ObjectId.isValid(taskId) || !ObjectId.isValid(subTaskId)) {
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid task ID or subtask ID'
+            });
+        }
+
+        // Validation du status
+        if (typeof status !== 'boolean') {
+            return res.status(400).json({
+                status: false,
+                message: 'Status must be a boolean value'
+            });
+        }
+
+        // Mettre à jour la sous-tâche
+        const result = await db.collection('tasks').findOneAndUpdate(
+            {
+                _id: new ObjectId(taskId),
+                'subTasks._id': new ObjectId(subTaskId)
+            },
+            {
+                $set: {
+                    'subTasks.$.isCompleted': status,
+                    updatedAt: new Date()
+                }
+            },
+            { returnDocument: 'after' }
+        );
+
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Task or SubTask not found'
+            });
+        }
+
+        res.status(200).json({
+            status: true,
+            message: status
+                ? "Task has been marked completed"
+                : "Task has been marked uncompleted",
+        });
+    } catch (error) {
+        console.error('Update subtask stage error:', error);
+        return res.status(400).json({ 
+            status: false, 
+            message: error.message 
+        });
+    }
+};
+
 module.exports = {
     createTask,
     getTasks,
@@ -509,4 +640,6 @@ module.exports = {
     deleteRestoreTask,
     getDashboardStats,
     createSubTask,
+    postTaskActivity,
+    updateSubTaskStage,
 };
