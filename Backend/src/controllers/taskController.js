@@ -344,6 +344,10 @@ const deleteRestoreTask = async (req, res) => {
     }
 };
 
+/** Récupérer les statistiques du tableau de bord
+ * @route   GET /api/tasks/dashboard/stats
+ * @access  Private
+ */
 const getDashboardStats = async (req, res) => {
     try {
         const db = getDB();
@@ -431,6 +435,71 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
+/** Créer une sous-tâche pour une tâche donnée
+ * @route   POST /api/tasks/:id/subtasks
+ * @access  Private
+ */
+const createSubTask = async (req, res) => {
+    try {
+        const db = getDB();
+        const { title, tag, date } = req.body;
+        const { id } = req.params;
+
+        // Validation
+        if (!title || title.trim() === '') {
+            return res.status(400).json({
+                status: false,
+                message: 'SubTask title is required'
+            });
+        }
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid task ID'
+            });
+        }
+
+        // Créer la nouvelle sous-tâche
+        const newSubTask = {
+            _id: new ObjectId(),
+            title,
+            date: date ? new Date(date) : new Date(),
+            tag: tag || '',
+            isCompleted: false
+        };
+
+        // Ajouter la sous-tâche au tableau subTasks
+        const result = await db.collection('tasks').findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            { 
+                $push: { subTasks: newSubTask },
+                $set: { updatedAt: new Date() }
+            },
+            { returnDocument: 'after' }
+        );
+
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Task not found'
+            });
+        }
+
+        res.status(200).json({ 
+            status: true, 
+            message: "SubTask added successfully.",
+            task: result
+        });
+    } catch (error) {
+        console.error('Create subtask error:', error);
+        return res.status(400).json({ 
+            status: false, 
+            message: error.message 
+        });
+    }
+};
+
 module.exports = {
     createTask,
     getTasks,
@@ -439,4 +508,5 @@ module.exports = {
     trashTask,
     deleteRestoreTask,
     getDashboardStats,
+    createSubTask,
 };

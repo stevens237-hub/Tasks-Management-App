@@ -186,8 +186,7 @@ const AddTask = ({ open, setOpen, task }) => {
                 name='description'
                 {...register("description")}
                 className='w-full bg-transparent px-3 py-1.5 2xl:py-3 border border-gray-300
-            dark:border-gray-600 placeholder-gray-300 dark:placeholder-gray-700
-            text-gray-900 dark:text-white outline-none text-base focus:ring-2
+            text-gray-900 outline-none text-base focus:ring-2
             ring-blue-300'
               ></textarea>
             </div>
@@ -203,8 +202,7 @@ const AddTask = ({ open, setOpen, task }) => {
                 name='links'
                 {...register("links")}
                 className='w-full bg-transparent px-3 py-1.5 2xl:py-3 border border-gray-300
-            dark:border-gray-600 placeholder-gray-300 dark:placeholder-gray-700
-            text-gray-900 dark:text-white outline-none text-base focus:ring-2
+            text-gray-900 outline-none text-base focus:ring-2
             ring-blue-300'
               ></textarea>
             </div>

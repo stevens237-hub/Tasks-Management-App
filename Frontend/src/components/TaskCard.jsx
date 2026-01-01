@@ -8,7 +8,7 @@ import {
 } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../utils";
-
+import AddSubTask from "./AddSubTask";
 import { BiMessageAltDetail } from "react-icons/bi";
 import { FaList } from "react-icons/fa";
 import TaskDialog from "./TaskDialog";
@@ -67,7 +67,7 @@ const TaskCard = ({ task }) => {
             </div>
             <div className='flex gap-1 items-center text-sm text-gray-600 '>
               <FaList />
-              <span>0/{task?.subTasks?.length}</span>
+              <span>{task?.subTasks?.length}</span>
             </div>
           </div>
 
@@ -121,7 +121,7 @@ const TaskCard = ({ task }) => {
         </div>
       </div>
 
-      {/* <AddSubTask open={open} setOpen={setOpen} id={task._id} /> */}
+      <AddSubTask open={open} setOpen={setOpen} id={task._id} />
     </>
   );
 };

@@ -19,6 +19,7 @@ router.get('/dashboard', protect, getDashboardStats);
 
 // Routes CRUD de base (toutes protégées)
 router.post('/create', protect, createTask);
+router.put("/create-subtask/:id", protect, createSubTask);
 router.get('/', protect, getTasks);
 router.get('/:id', protect, getTask);
 router.put('/update/:id', protect, updateTask);

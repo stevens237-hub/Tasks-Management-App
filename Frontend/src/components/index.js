@@ -17,4 +17,4 @@ export { default as TaskColor } from './TaskColor';
 export { default as ConfirmatioDialog } from './ConfirmationDialog';
 export { default as TaskAssets } from './TaskAssets';
 export { default as Chart } from './chart';
-// export { default as AddSubTask } from './AddSubTask';
+export { default as AddSubTask } from './AddSubTask';

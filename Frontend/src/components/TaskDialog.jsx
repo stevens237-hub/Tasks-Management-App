@@ -1,19 +1,15 @@
 import { Menu, Transition } from "@headlessui/react";
-import clsx from "clsx";
 import { Fragment, useState } from "react";
 import { AiTwotoneFolderOpen } from "react-icons/ai";
 import { BsThreeDots } from "react-icons/bs";
-import { FaExchangeAlt } from "react-icons/fa";
-import { HiDuplicate } from "react-icons/hi";
 import { MdAdd, MdOutlineEdit } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTrashTastMutation } from "./../redux/slices/api/taskApiSlice";
 import ConfirmatioDialog from "./ConfirmationDialog";
-// import AddSubTask from "./AddSubTask";
+import AddSubTask from "./AddSubTask";
 import AddTask from "./AddTask";
-import TaskColor from "./TaskColor";
 import { useSelector } from "react-redux";
 
 const CustomTransition = ({ children }) => (
@@ -138,7 +134,7 @@ export default function TaskDialog({ task }) {
         task={task}
         key={new Date().getTime()}
       />
-      {/* <AddSubTask open={open} setOpen={setOpen} /> */}
+      <AddSubTask open={open} setOpen={setOpen} />
       <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}

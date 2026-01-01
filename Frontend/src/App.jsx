@@ -22,7 +22,7 @@ function App() {
         <Route path='/register' element={<Register/>} />
         <Route path='/login' element={<Login/>}/>
         
-        {/* Routes protégées avec Layout */}
+        {/* Routes protégées avec MainLayout */}
         <Route 
           element={
             <ProtectedRoute>
