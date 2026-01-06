@@ -438,7 +438,7 @@ const TaskDetail = () => {
                   <div className=''>
                     <p className='text-lg font-semibold'>SUPPORT LINKS</p>
                     <div className='w-full flex flex-col gap-4'>
-                      {task?.links?.map((el, index) => (
+                      {Array.isArray(task?.links) && task.links.map((el, index) => (
                         <a
                           key={index}
                           href={el}
@@ -449,6 +449,7 @@ const TaskDetail = () => {
                           {el}
                         </a>
                       ))}
+                      
                     </div>
                   </div>
                 )}

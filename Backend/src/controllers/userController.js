@@ -1,6 +1,4 @@
 import User from "../models/user.js";
-import Notice from "../models/Notification.js";
-
 
 export const logoutUser = async (req, res) => {
   try {
@@ -16,43 +14,14 @@ export const logoutUser = async (req, res) => {
   }
 };
 
-export const getTeamList = async (req, res) => {
-  try {
-    const users = await User.find().select("name title role email isActive");
-
-    res.status(200).json(users);
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
-  }
-};
-
-export const getNotificationsList = async (req, res) => {
-  try {
-    const { userId } = req.user;
-
-    const notice = await Notice.find({
-      team: userId,
-      isRead: { $nin: [userId] },
-    }).populate("task", "title");
-
-    res.status(201).json(notice);
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
-  }
-};
-
 export const updateUserProfile = async (req, res) => {
   try {
-    const { userId, isAdmin } = req.user;
+    const { userId } = req.user;
     const { _id } = req.body;
 
     const id =
-      isAdmin && userId === _id
+      userId === _id
         ? userId
-        : isAdmin && userId !== _id
-        ? _id
         : userId;
 
     const user = await User.findById(id);
@@ -80,32 +49,6 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-export const markNotificationRead = async (req, res) => {
-  try {
-    const { userId } = req.user;
-
-    const { isReadType, id } = req.query;
-
-    if (isReadType === "all") {
-      await Notice.updateMany(
-        { team: userId, isRead: { $nin: [userId] } },
-        { $push: { isRead: userId } },
-        { new: true }
-      );
-    } else {
-      await Notice.findOneAndUpdate(
-        { _id: id, isRead: { $nin: [userId] } },
-        { $push: { isRead: userId } },
-        { new: true }
-      );
-    }
-
-    res.status(201).json({ status: true, message: "Done" });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
-  }
-};
 
 export const changeUserPassword = async (req, res) => {
   try {
