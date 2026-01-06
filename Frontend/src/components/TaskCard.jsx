@@ -67,7 +67,7 @@ const TaskCard = ({ task }) => {
             </div>
             <div className='flex gap-1 items-center text-sm text-gray-600 '>
               <FaList />
-              <span>{task?.subTasks?.length}</span>
+              <span>{task?.subTasks?.filter(st => st.isCompleted).length || 0}/{task?.subTasks?.length}</span>
             </div>
           </div>
 

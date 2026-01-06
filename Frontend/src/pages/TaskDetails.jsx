@@ -434,7 +434,7 @@ const TaskDetail = () => {
                   </div>
                 )}
 
-                {/* {task?.links?.length > 0 && (
+                {task?.links?.length > 0 && (
                   <div className=''>
                     <p className='text-lg font-semibold'>SUPPORT LINKS</p>
                     <div className='w-full flex flex-col gap-4'>
@@ -451,7 +451,7 @@ const TaskDetail = () => {
                       ))}
                     </div>
                   </div>
-                )} */}
+                )}
               </div>
             </div>
           </>
